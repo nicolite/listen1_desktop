@@ -1,0 +1,196 @@
+/* Local music library folder management */
+
+/*
+ * Sidebar entry, revealed on row hover.
+ * Two things to know before touching this:
+ * 1. `.sidebar ul li *` sets `pointer-events: none` (a workaround so hovering a
+ *    row does not fire dragleave while a song is dragged over the sidebar).
+ *    Re-enabling it on a bare class does NOT work — see the dedicated rule
+ *    below, which needs real specificity to win.
+ * 2. The black2 sidebar collapses to 60px, where a right-aligned icon would
+ *    overflow the row. `.sidebar-content` only exists in black2, so the last
+ *    rule below never applies to the black theme.
+ */
+.sidebar-block-action {
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: auto;
+  border-radius: 4px;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+/*
+ * Specificity trap — do not "simplify" this selector back into the block above.
+ *   `.sidebar ul li *`              -> (0,1,2): one class, two type selectors
+ *   `.sidebar-block-action`         -> (0,1,0)
+ * The first wins on specificity alone, so `pointer-events: auto` on the bare
+ * class is dead code and the icon silently swallows every click (verified by
+ * hit-testing: elementFromPoint() over the whole 18x18 box returned the parent
+ * <li>, 0/28 points reachable). Matching three selectors deep restores it to
+ * (0,2,2) and the icon becomes clickable again.
+ * The `*` half also re-enables the inline <svg> children, which inherit the
+ * same blanket `none` and would otherwise punch dead spots into the target.
+ */
+.sidebar ul li .sidebar-block-action,
+.sidebar ul li .sidebar-block-action * {
+  pointer-events: auto;
+}
+
+.sidebar ul li:hover .sidebar-block-action {
+  display: flex;
+}
+
+.sidebar-block-action:hover {
+  opacity: 1;
+  background-color: rgba(127, 127, 127, 0.3);
+}
+
+.sidebar-block-action svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+  stroke: none;
+}
+
+.sidebar-content:not(.opensidebar) .sidebar-block-action {
+  display: none !important;
+}
+
+/* Folder manager dialog, rendered inside the shared `.dialog` shell.
+   `.dialog-body` is a fixed 370px scroller, so the dialog is a flex column of
+   `min-height: 100%` and the action bar sticks to its bottom edge. */
+.local-folders-dialog {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+.local-folders-main {
+  flex: 1 1 auto;
+  padding-bottom: 12px;
+}
+
+.local-folders-desc {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-subtitle-color, #888);
+}
+
+.local-folders-empty {
+  padding: 16px 0;
+  text-align: center;
+  color: var(--text-subtitle-color, #888);
+}
+
+.local-folder-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: var(--default-border-radius, 2px);
+}
+
+.local-folder-row:hover {
+  background-color: var(--sidebar-hover-background-color, rgba(127, 127, 127, 0.12));
+}
+
+.local-folder-row-icon {
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  opacity: 0.7;
+}
+
+.local-folder-path {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.local-folder-meta {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--text-subtitle-color, #888);
+}
+
+/* Actions stay hidden until the row is hovered. A permanent button pair on
+   every row turns a three-folder list into a wall of controls. On hover the
+   buttons take over the track-count slot (the same swap Spotify does with
+   duration -> play controls) so the path never shifts under the cursor. */
+.local-folder-actions {
+  display: none;
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.local-folder-row:hover .local-folder-actions {
+  display: flex;
+}
+
+.local-folder-row:hover .local-folder-meta {
+  display: none;
+}
+
+.local-folder-btn {
+  border: 1px solid var(--button-border-color, #222);
+  background-color: var(--button-background-color, #222);
+  color: var(--text-default-color, #fff);
+  border-radius: var(--default-border-radius, 2px);
+  padding: 3px 8px;
+  font-size: 12px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.local-folder-btn:hover {
+  background-color: var(--button-hover-background-color, #444);
+}
+
+.local-folder-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.local-folder-btn-primary {
+  border-color: var(--theme-color, #017afe);
+  background-color: var(--theme-color, #017afe);
+  color: #fff;
+}
+
+.local-folder-btn-danger {
+  border-color: var(--badge-border-color, #843932);
+  color: var(--badge-font-color, #c3473a);
+}
+
+.local-folder-btn-danger:hover {
+  background-color: var(--badge-border-color, #843932);
+  color: #fff;
+}
+
+.local-folders-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 -20px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line-default-color, #333);
+  background-color: var(--dialog-background-color, #333);
+}
+
+.local-folders-spacer {
+  flex: 1 1 auto;
+}
