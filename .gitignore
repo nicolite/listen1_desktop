@@ -3,3 +3,5 @@ dist
 yarn.lock
 .vscode
 .DS_Store
+dist_new
+.workbuddy

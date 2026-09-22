@@ -1,8 +1,50 @@
 const { existsSync } = require("fs");
-const { readFile } = require("fs/promises");
+const { readdir, readFile } = require("fs/promises");
 const { parseFile } = require("music-metadata");
-const { basename, extname, parse, format } = require("path");
+const { basename, extname, parse, format, join } = require("path");
 const { detect } = require("chardet");
+
+// Supported local music file extensions (lowercase, without dot)
+const MUSIC_EXTENSIONS = [
+  "flac",
+  "mp3",
+  "mp4",
+  "ogg",
+  "wav",
+  "webm",
+  "m4a",
+];
+
+// Recursively collect music files under `dir`.
+// `depth` guards against symlink loops / absurdly deep trees.
+async function walk(dir, results, depth) {
+  if (depth > 20) {
+    return;
+  }
+  let entries;
+  try {
+    entries = await readdir(dir, { withFileTypes: true });
+  } catch (error) {
+    return;
+  }
+  for (const entry of entries) {
+    const full = join(dir, entry.name);
+    try {
+      if (entry.isDirectory()) {
+        // eslint-disable-next-line no-await-in-loop
+        await walk(full, results, depth + 1);
+      } else if (entry.isFile()) {
+        const ext = extname(entry.name).toLowerCase().replace(/^\./, "");
+        if (MUSIC_EXTENSIONS.includes(ext)) {
+          results.push(full);
+        }
+      }
+    } catch (error) {
+      // ignore unreadable entry and continue
+    }
+  }
+}
+
 module.exports = {
   async readAudioTags(filePath) {
     const fileName = basename(filePath, extname(filePath));
@@ -33,5 +75,12 @@ module.exports = {
         },
       };
     }
+  },
+
+  // Recursively scan a folder and return absolute paths of all music files.
+  async scanMusicFolder(folderPath) {
+    const results = [];
+    await walk(folderPath, results, 0);
+    return results;
   },
 };
