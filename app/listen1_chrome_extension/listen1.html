@@ -68,6 +68,7 @@
     <script type="text/javascript" src="js/controller/platform.js"></script>
     <script type="text/javascript" src="js/controller/playlist.js"></script>
     <script type="text/javascript" src="js/controller/play.js"></script>
+    <script type="text/javascript" src="js/download_manager.js"></script>
     <script
       type="text/javascript"
       src="js/controller/instant_search.js"
@@ -169,6 +170,37 @@
                           <button class="local-folder-btn" ng-click="closeDialog()">
                             {{_DONE}}
                           </button>
+                        </div>
+                      </div>
+                      <!-- download manager dialog -->
+                      <div class="download-manager-dialog" ng-show="dialog_type==14">
+                        <div class="download-manager-desc">{{_DOWNLOADS_DESC}}</div>
+                        <div class="download-manager-list" ng-if="dl.tasks.length > 0">
+                          <div class="download-task" ng-repeat="task in dl.tasks track by task.id">
+                            <div class="download-task-row">
+                              <span class="download-task-title">{{ task.track.title || task.track.id }}</span>
+                              <span class="download-task-status">
+                                <span ng-if="task.status==='downloading'">{{_DOWNLOADING}}</span>
+                                <span ng-if="task.status==='done'">{{_DOWNLOAD_DONE}}</span>
+                                <span ng-if="task.status==='error'" class="download-task-error">{{_DOWNLOAD_FAILED}}: {{task.error}}</span>
+                                <span ng-if="task.status==='pending'">{{_PENDING}}</span>
+                              </span>
+                            </div>
+                            <div class="download-task-progress" ng-if="task.status==='downloading' || task.status==='done'">
+                              <div class="download-task-bar"><div class="download-task-bar-inner" ng-style="{width: (task.total ? (task.loaded/task.total*100) : 0) + '%'}"></div></div>
+                              <span class="download-task-percent" ng-if="task.total">{{ (task.loaded/task.total*100) | number:0 }}%</span>
+                            </div>
+                            <div class="download-task-actions" ng-if="task.status==='error'">
+                              <button class="download-task-retry" ng-click="dl.retry(task.id)">{{_RETRY}}</button>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="download-manager-empty" ng-if="dl.tasks.length === 0">{{_NO_DOWNLOADS}}</div>
+                        <div class="download-manager-footer">
+                          <button class="download-manager-btn" ng-click="dl.openFolder()">{{_OPEN_FOLDER}}</button>
+                          <button class="download-manager-btn" ng-click="dl.clearFinished()">{{_CLEAR_DOWNLOADS}}</button>
+                          <span class="download-manager-spacer"></span>
+                          <button class="download-manager-btn" ng-click="closeDialog()">{{_DONE}}</button>
                         </div>
                       </div>
                       <!-- choose playlist dialog-->
@@ -680,6 +712,16 @@
                                         <use href="#play-circle"></use>
                                       </svg>
                                     </div>
+                                    <div
+                                      class="fav"
+                                      ng-click="toggleCardFavorite(i, $event)"
+                                      ng-class="{'favorited': favoritedIds[i.id]}"
+                                      title="{{favoritedIds[i.id] ? _FAVORITED : _FAVORITE}}"
+                                    >
+                                      <svg class="feather">
+                                        <use href="#star"></use>
+                                      </svg>
+                                    </div>
                                   </div>
                                   <div class="desc">
                                     <span
@@ -909,6 +951,14 @@
                                         ng-show="options"
                                         ><span class="icon li-link"></span
                                       ></a>
+                                      <a
+                                        title="{{_DOWNLOAD}}"
+                                        class="detail-download-button"
+                                        ng-click="downloadSong(song)"
+                                        ng-show="options && !is_local"
+                                      >
+                                        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l5 5h-3v6h-4V8H7l5-5zM5 19h14v2H5v-2z"/></svg>
+                                      </a>
                                     </div>
                                   </li>
                                   <li
@@ -1677,6 +1727,25 @@
                                     </div>
                                   </div>
                                   <div
+                                    class="playlist-button download-all-button"
+                                    ng-show="!is_local"
+                                    ng-click="downloadAllSongs()"
+                                  >
+                                    <div class="play-list">
+                                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                      <span>{{_DOWNLOAD_ALL}}</span>
+                                    </div>
+                                  </div>
+                                  <div
+                                    class="playlist-button download-mgr-button"
+                                    ng-click="showDialog(14)"
+                                  >
+                                    <div class="play-list">
+                                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                      <span>{{_DOWNLOAD_MANAGER}}</span>
+                                    </div>
+                                  </div>
+                                  <div
                                     class="playlist-button edit-button"
                                     ng-show="isChrome && is_favorite && !is_local"
                                     ng-click="closeWindow();showPlaylist(list_id)"
@@ -1797,6 +1866,14 @@
                                     ng-show="options && !is_local"
                                     ><span class="icon li-link"></span
                                   ></a>
+                                  <a
+                                    title="{{_DOWNLOAD}}"
+                                    class="detail-download-button"
+                                    ng-click="downloadSong(song)"
+                                    ng-show="options && !is_local"
+                                  >
+                                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l5 5h-3v6h-4V8H7l5-5zM5 19h14v2H5v-2z"/></svg>
+                                  </a>
                                 </div>
                               </li>
                             </ul>
@@ -2244,6 +2321,37 @@
                         <button class="local-folder-btn" ng-click="closeDialog()">
                           {{_DONE}}
                         </button>
+                      </div>
+                    </div>
+                    <!-- download manager dialog -->
+                    <div class="download-manager-dialog" ng-show="dialog_type==14">
+                      <div class="download-manager-desc">{{_DOWNLOADS_DESC}}</div>
+                      <div class="download-manager-list" ng-if="dl.tasks.length > 0">
+                        <div class="download-task" ng-repeat="task in dl.tasks track by task.id">
+                          <div class="download-task-row">
+                            <span class="download-task-title">{{ task.track.title || task.track.id }}</span>
+                            <span class="download-task-status">
+                              <span ng-if="task.status==='downloading'">{{_DOWNLOADING}}</span>
+                              <span ng-if="task.status==='done'">{{_DOWNLOAD_DONE}}</span>
+                              <span ng-if="task.status==='error'" class="download-task-error">{{_DOWNLOAD_FAILED}}: {{task.error}}</span>
+                              <span ng-if="task.status==='pending'">{{_PENDING}}</span>
+                            </span>
+                          </div>
+                          <div class="download-task-progress" ng-if="task.status==='downloading' || task.status==='done'">
+                            <div class="download-task-bar"><div class="download-task-bar-inner" ng-style="{width: (task.total ? (task.loaded/task.total*100) : 0) + '%'}"></div></div>
+                            <span class="download-task-percent" ng-if="task.total">{{ (task.loaded/task.total*100) | number:0 }}%</span>
+                          </div>
+                          <div class="download-task-actions" ng-if="task.status==='error'">
+                            <button class="download-task-retry" ng-click="dl.retry(task.id)">{{_RETRY}}</button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="download-manager-empty" ng-if="dl.tasks.length === 0">{{_NO_DOWNLOADS}}</div>
+                      <div class="download-manager-footer">
+                        <button class="download-manager-btn" ng-click="dl.openFolder()">{{_OPEN_FOLDER}}</button>
+                        <button class="download-manager-btn" ng-click="dl.clearFinished()">{{_CLEAR_DOWNLOADS}}</button>
+                        <span class="download-manager-spacer"></span>
+                        <button class="download-manager-btn" ng-click="closeDialog()">{{_DONE}}</button>
                       </div>
                     </div>
                     <!-- choose playlist dialog-->
@@ -2778,6 +2886,16 @@
                                   >  
                                   <svg  fill="currentColor" style="height: 44%;width:44%;margin-left: 4px;" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="play" class="svg-inline--fa fa-play fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z"></path></svg>
                                   </div>
+                                    <div
+                                      class="fav"
+                                      ng-click="toggleCardFavorite(i, $event)"
+                                      ng-class="{'favorited': favoritedIds[i.id]}"
+                                      title="{{favoritedIds[i.id] ? _FAVORITED : _FAVORITE}}"
+                                    >
+                                      <svg class="feather">
+                                        <use href="#star"></use>
+                                      </svg>
+                                    </div>
                                 </div>
                                 <div class="desc">
                                   <span
@@ -3037,6 +3155,14 @@
                                       ng-show="options"
                                       >
                                       <svg t="1659670349346" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2640" width="512" height="512"><path d="M475.66342293 318.38570027A54.23369707 54.23369707 0 0 1 399.7362464 241.91618667L512 128.56775893a271.16848747 271.16848747 0 0 1 383.43224107 383.43224107L779.372128 625.8907648a54.23369707 54.23369707 0 1 1-76.46951253-76.4695136l113.89076373-113.8907648a162.70109227 162.70109227 0 0 0-229.9508768-229.9508768z m74.8425024 385.60158826A54.23369707 54.23369707 0 1 1 626.97543893 779.372128l-114.43310186 114.43310187A271.16848747 271.16848747 0 0 1 128.56775893 512L243.0008608 399.7362464a54.23369707 54.23369707 0 1 1 77.01185067 74.30016533l-114.97543894 114.43310187a162.70109227 162.70109227 0 0 0 229.9508768 229.9508768z m-135.0419072-17.89712a54.23369707 54.23369707 0 1 1-76.46951253-76.4695136l268.45680213-268.45680213a54.23369707 54.23369707 0 0 1 76.4695136 76.4695136z" fill="currentColor" p-id="2641"></path></svg>
+                                      </a>
+                                      <a
+                                        title="{{_DOWNLOAD}}"
+                                        class="detail-download-button"
+                                        ng-click="downloadSong(song)"
+                                        ng-show="options && !is_local"
+                                      >
+                                        <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l5 5h-3v6h-4V8H7l5-5zM5 19h14v2H5v-2z"/></svg>
                                       </a>
                                     <!-- <a
                                       title="{{_ORIGIN_LINK}}"
@@ -3839,6 +3965,25 @@
                                   </div>
                                 </div>
                                 <div
+                                  class="playlist-button download-all-button"
+                                  ng-show="!is_local"
+                                  ng-click="downloadAllSongs()"
+                                >
+                                  <div class="play-list">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 3l5 5h-3v6h-4V8H7l5-5zM5 19h14v2H5v-2z"/></svg>
+                                    <span>{{_DOWNLOAD_ALL}}</span>
+                                  </div>
+                                </div>
+                                <div
+                                  class="playlist-button download-mgr-button"
+                                  ng-click="showDialog(14)"
+                                >
+                                  <div class="play-list">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 3l5 5h-3v6h-4V8H7l5-5zM5 19h14v2H5v-2z"/></svg>
+                                    <span>{{_DOWNLOAD_MANAGER}}</span>
+                                  </div>
+                                </div>
+                                <div
                                   class="playlist-button edit-button"
                                   ng-show="isChrome && is_favorite && !is_local"
                                   ng-click="closeWindow();showPlaylist(list_id)"
@@ -3978,6 +4123,14 @@
                                   ng-show="options && !is_local"
                                   >
                                   <svg t="1659628952356" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1783" width="512" height="512"><path d="M475.66342293 318.38570027A54.23369707 54.23369707 0 0 1 399.7362464 241.91618667L512 128.56775893a271.16848747 271.16848747 0 0 1 383.43224107 383.43224107L779.372128 625.8907648a54.23369707 54.23369707 0 1 1-76.46951253-76.4695136l113.89076373-113.8907648a162.70109227 162.70109227 0 0 0-229.9508768-229.9508768z m74.8425024 385.60158826A54.23369707 54.23369707 0 1 1 626.97543893 779.372128l-114.43310186 114.43310187A271.16848747 271.16848747 0 0 1 128.56775893 512L243.0008608 399.7362464a54.23369707 54.23369707 0 1 1 77.01185067 74.30016533l-114.97543894 114.43310187a162.70109227 162.70109227 0 0 0 229.9508768 229.9508768z m-135.0419072-17.89712a54.23369707 54.23369707 0 1 1-76.46951253-76.4695136l268.45680213-268.45680213a54.23369707 54.23369707 0 0 1 76.4695136 76.4695136z" fill="currentColor" p-id="1784"></path></svg>
+                                </a>
+                                <a
+                                  title="{{_DOWNLOAD}}"
+                                  class="detail-download-button"
+                                  ng-click="downloadSong(song)"
+                                  ng-show="options && !is_local"
+                                >
+                                  <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l5 5h-3v6h-4V8H7l5-5zM5 19h14v2H5v-2z"/></svg>
                                 </a>
                               </div>
                               <div class="time">{{song.duration}}</div>

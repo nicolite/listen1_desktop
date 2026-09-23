@@ -395,6 +395,43 @@ https://stackoverflow.com/questions/19889615/can-an-angular-directive-pass-argum
   fill: rgba(100, 100, 100, 0.5);
 }
 
+.playlist-covers .u-cover .fav {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  height: 28px;
+  width: 28px;
+  z-index: 3;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s linear;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.playlist-covers .u-cover:hover .fav,
+.playlist-covers .u-cover .fav.favorited {
+  opacity: 1;
+}
+
+.playlist-covers .u-cover .fav svg {
+  height: 22px;
+  width: 22px;
+  stroke: #ffffff;
+  stroke-width: 1;
+  fill: rgba(200, 200, 200, 0.5);
+}
+
+.playlist-covers .u-cover .fav.favorited svg {
+  fill: #ffffff;
+  stroke: #ffffff;
+}
+
+.playlist-covers .u-cover .fav:hover svg {
+  fill: rgba(255, 255, 255, 0.9);
+}
+
 .playlist-covers .desc {
   cursor: pointer;
 }
@@ -1800,3 +1837,122 @@ svg.searchspinner {
   border-radius: var(--default-border-radius);
 }
 /* widget all-playlist-filter end */
+
+/* ===== download subsystem (Phase 2) ===== */
+/* per-track download button in song lists */
+ul.detail-songlist li .tools .detail-download-button {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  margin-right: 10px;
+}
+ul.detail-songlist li .tools .detail-download-button .icon {
+  height: 16px;
+  width: 16px;
+  color: #9d9d9d;
+}
+ul.detail-songlist li .tools .detail-download-button:hover .icon {
+  color: #fff;
+}
+
+/* header "download all" / "download manager" buttons */
+.playlist-button-list .playlist-button.download-all-button,
+.playlist-button-list .playlist-button.download-mgr-button {
+  flex: 0 0 auto;
+}
+.playlist-button-list .playlist-button.download-all-button .play-list svg,
+.playlist-button-list .playlist-button.download-mgr-button .play-list svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  margin-right: 8px;
+  stroke: rgb(102, 102, 102);
+  fill: none;
+}
+
+/* download manager dialog */
+.download-manager-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.download-manager-desc {
+  font-size: 12px;
+  color: #9d9d9d;
+  padding-bottom: 8px;
+}
+.download-manager-list {
+  flex: 1;
+  overflow-y: auto;
+}
+.download-task {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.download-task-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.download-task-title {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  margin-right: 8px;
+}
+.download-task-status {
+  font-size: 12px;
+  color: #9d9d9d;
+  flex: 0 0 auto;
+}
+.download-task-error {
+  color: #e74c3c;
+}
+.download-task-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.download-task-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.download-task-bar-inner {
+  height: 100%;
+  background: var(--theme-color, #4a90d2);
+}
+.download-task-percent {
+  font-size: 11px;
+  color: #9d9d9d;
+}
+.download-task-actions {
+  margin-top: 4px;
+}
+.download-task-retry {
+  font-size: 12px;
+  padding: 2px 8px;
+}
+.download-manager-empty {
+  color: #9d9d9d;
+  font-size: 13px;
+  padding: 16px 0;
+}
+.download-manager-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+}
+.download-manager-spacer {
+  flex: 1;
+}
+.download-manager-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+}

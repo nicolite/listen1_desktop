@@ -183,5 +183,18 @@
  "_PROTOCOL": "Protocol",
  "_HOST": "Host",
  "_PORT": "Port",
- "ZOOM_IN_OUT": "Zoom In/Out"
+ "ZOOM_IN_OUT": "Zoom In/Out",
+ "_DOWNLOAD": "Télécharger",
+ "_DOWNLOAD_ALL": "Tout télécharger",
+ "_DOWNLOAD_MANAGER": "Gestion des téléchargements",
+ "_DOWNLOADS_DESC": "Les morceaux téléchargés sont enregistrés dans le dossier Listen1 de vos Téléchargements.",
+ "_DOWNLOADING": "Téléchargement…",
+ "_DOWNLOAD_DONE": "Terminé",
+ "_DOWNLOAD_FAILED": "Échec du téléchargement",
+ "_PENDING": "En attente",
+ "_RETRY": "Réessayer",
+ "_NO_DOWNLOADS": "Aucun téléchargement",
+ "_OPEN_FOLDER": "Ouvrir le dossier",
+ "_CLEAR_DOWNLOADS": "Effacer terminés",
+ "_DOWNLOAD_QUEUED": "Ajouté à la file"
 }

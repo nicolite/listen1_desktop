@@ -183,5 +183,18 @@
  "_PROTOCOL": "代理协议",
  "_HOST": "主机地址",
  "_PORT": "端口",
- "ZOOM_IN_OUT": "放大/缩小"
+ "ZOOM_IN_OUT": "放大/缩小",
+ "_DOWNLOAD": "下载",
+ "_DOWNLOAD_ALL": "下载全部",
+ "_DOWNLOAD_MANAGER": "下载管理",
+ "_DOWNLOADS_DESC": "下载的歌曲将保存到下载文件夹中的 Listen1 目录",
+ "_DOWNLOADING": "下载中",
+ "_DOWNLOAD_DONE": "已完成",
+ "_DOWNLOAD_FAILED": "下载失败",
+ "_PENDING": "等待中",
+ "_RETRY": "重试",
+ "_NO_DOWNLOADS": "暂无下载任务",
+ "_OPEN_FOLDER": "打开文件夹",
+ "_CLEAR_DOWNLOADS": "清除已完成",
+ "_DOWNLOAD_QUEUED": "已加入下载队列"
 }

@@ -9,7 +9,8 @@ angular.module('listenone').controller('NavigationController', [
   '$scope',
   '$timeout',
   '$rootScope',
-  ($scope, $timeout, $rootScope) => {
+  'downloadManager',
+  ($scope, $timeout, $rootScope, downloadManager) => {
     $rootScope.page_title = { title: 'Listen 1', artist: '', status: '' }; // eslint-disable-line no-param-reassign
     $scope.window_url_stack = [];
     $scope.window_poped_url_stack = [];
@@ -296,6 +297,27 @@ angular.module('listenone').controller('NavigationController', [
         $scope.dialog_title = i18next.t('_LOCAL_FOLDERS');
         $scope.loadLocalFolders();
       }
+      if (dialog_type === 14) {
+        $scope.dialog_title = i18next.t('_DOWNLOAD_MANAGER');
+        $scope.dl = downloadManager;
+      }
+    };
+
+    $scope.downloadSong = (song) => {
+      if (!song || song.is_local) return;
+      downloadManager.enqueue(song);
+      notyf.success(i18next.t('_DOWNLOAD_QUEUED'));
+    };
+
+    $scope.downloadAllSongs = () => {
+      const list = ($scope.songs || []).filter((t) => !t.is_local);
+      if (!list.length) {
+        notyf.info(i18next.t('_NO_DOWNLOADS'));
+        return;
+      }
+      downloadManager.enqueueMany(list);
+      notyf.success(i18next.t('_DOWNLOAD_QUEUED'));
+      $scope.showDialog(14);
     };
 
     $scope.onSidebarPlaylistDrop = (

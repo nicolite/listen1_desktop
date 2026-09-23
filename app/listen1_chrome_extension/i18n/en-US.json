@@ -183,5 +183,18 @@
  "_PROTOCOL": "Protocol",
  "_HOST": "Host",
  "_PORT": "Port",
- "ZOOM_IN_OUT": "Zoom In/Out"
+ "ZOOM_IN_OUT": "Zoom In/Out",
+ "_DOWNLOAD": "Download",
+ "_DOWNLOAD_ALL": "Download All",
+ "_DOWNLOAD_MANAGER": "Download Manager",
+ "_DOWNLOADS_DESC": "Downloaded songs are saved to the Listen1 folder in your Downloads.",
+ "_DOWNLOADING": "Downloading",
+ "_DOWNLOAD_DONE": "Done",
+ "_DOWNLOAD_FAILED": "Download failed",
+ "_PENDING": "Pending",
+ "_RETRY": "Retry",
+ "_NO_DOWNLOADS": "No downloads",
+ "_OPEN_FOLDER": "Open Folder",
+ "_CLEAR_DOWNLOADS": "Clear Finished",
+ "_DOWNLOAD_QUEUED": "Added to download queue"
 }

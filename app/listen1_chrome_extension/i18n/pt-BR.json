@@ -183,5 +183,18 @@
  "_PROTOCOL": "Protocolo",
  "_HOST": "Host",
  "_PORT": "Porta",
- "ZOOM_IN_OUT": "Ampliar/Reduzir"
+ "ZOOM_IN_OUT": "Ampliar/Reduzir",
+ "_DOWNLOAD": "Baixar",
+ "_DOWNLOAD_ALL": "Baixar Tudo",
+ "_DOWNLOAD_MANAGER": "Gerenciador de Downloads",
+ "_DOWNLOADS_DESC": "As músicas baixadas são salvas na pasta Listen1 em seus Downloads.",
+ "_DOWNLOADING": "Baixando",
+ "_DOWNLOAD_DONE": "Concluído",
+ "_DOWNLOAD_FAILED": "Falha no download",
+ "_PENDING": "Pendente",
+ "_RETRY": "Tentar novamente",
+ "_NO_DOWNLOADS": "Nenhum download",
+ "_OPEN_FOLDER": "Abrir Pasta",
+ "_CLEAR_DOWNLOADS": "Limpar Concluídos",
+ "_DOWNLOAD_QUEUED": "Adicionado à fila de downloads"
 }

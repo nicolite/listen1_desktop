@@ -183,5 +183,18 @@
   "_PROTOCOL": "Protocol",
   "_HOST": "Host",
   "_PORT": "Port",
-  "ZOOM_IN_OUT": "확대/축소"
+  "ZOOM_IN_OUT": "확대/축소",
+  "_DOWNLOAD": "다운로드",
+  "_DOWNLOAD_ALL": "전체 다운로드",
+  "_DOWNLOAD_MANAGER": "다운로드 관리",
+  "_DOWNLOADS_DESC": "다운로드한 곡은 다운로드 폴더의 Listen1 디렉터리에 저장됩니다.",
+  "_DOWNLOADING": "다운로드 중",
+  "_DOWNLOAD_DONE": "완료",
+  "_DOWNLOAD_FAILED": "다운로드 실패",
+  "_PENDING": "대기 중",
+  "_RETRY": "다시 시도",
+  "_NO_DOWNLOADS": "다운로드 없음",
+  "_OPEN_FOLDER": "폴더 열기",
+  "_CLEAR_DOWNLOADS": "완료 항목 지우기",
+  "_DOWNLOAD_QUEUED": "다운로드 대기열에 추가됨"
 }
