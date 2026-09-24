@@ -468,15 +468,24 @@
                           <div class="title">{{_PLATFORM_UNION}}</div>
                         </div>
                         <ul class="nav masthead-nav">
-                          <li
-                            ng-class="{ 'active':(current_tag==2) && (window_url_stack.length ==0) }"
-                            ng-click="showTag(2)"
-                          >
-                            <div class="sidebar-block">
-                              <span class="icon li-featured-list"></span
-                              ><a>{{_PLAYLISTS}}</a>
-                            </div>
-                          </li>
+                        <li
+                          ng-class="{ 'active':(current_tag==2) && (window_url_stack.length ==0) }"
+                          ng-click="showTag(2)"
+                        >
+                          <div class="sidebar-block">
+                            <span class="icon li-featured-list"></span
+                            ><a>{{_PLAYLISTS}}</a>
+                          </div>
+                        </li>
+                        <li
+                          ng-class="{ 'active': current_tag==99 }"
+                          ng-click="showDownloadManager()"
+                        >
+                          <div class="sidebar-block">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <a>{{_DOWNLOAD_MANAGER}}</a>
+                          </div>
+                        </li>
                         </ul>
                         <div
                           ng-if="!isChrome || is_login('netease') || is_login('qq')"
@@ -488,7 +497,7 @@
                           <li
                             ng-if="!isChrome"
                             ng-click="showPlaylist('lmplaylist_reserve')"
-                            ng-class="{ 'active':window_type=='list' && ( '/playlist?list_id=lmplaylist_reserve' === getCurrentUrl() ) }"
+                            ng-class="{ 'active': current_tag!=99 && window_type=='list' && ( '/playlist?list_id=lmplaylist_reserve' === getCurrentUrl() ) }"
                           >
                             <div class="sidebar-block">
                               <span class="icon li-featured-list"></span
@@ -536,7 +545,7 @@
                         <ul class="nav masthead-nav">
                           <li
                             ng-repeat="i in myplaylists track by $index"
-                            ng-class="{ 'active':window_type=='list' && ( ('/playlist?list_id='+i.info.id) === getCurrentUrl() ) }"
+                            ng-class="{ 'active': current_tag!=99 && window_type=='list' && ( ('/playlist?list_id='+i.info.id) === getCurrentUrl() ) }"
                             ng-click="showPlaylist(i.info.id)"
                             drag-drop-zone
                             drag-zone-type="'application/listen1-myplaylist'"
@@ -560,7 +569,7 @@
                         <ul class="nav masthead-nav">
                           <li
                             ng-repeat="i in favoriteplaylists track by $index"
-                            ng-class="{ 'active':window_type=='list' && ( ('/playlist?list_id='+i.info.id) === getCurrentUrl() ) }"
+                            ng-class="{ 'active': current_tag!=99 && window_type=='list' && ( ('/playlist?list_id='+i.info.id) === getCurrentUrl() ) }"
                             ng-click="showPlaylist(i.info.id, {useCache: false})"
                             drag-drop-zone
                             drag-zone-type="'application/listen1-favoriteplaylist'"
@@ -582,6 +591,73 @@
                     </div>
     
                     <div class="content" ng-controller="InstantSearchController">
+                        <div class="download-manager-page" ng-show="current_tag==99">
+                          <div class="dm-toolbar">
+                            <h2 class="dm-title">{{_DOWNLOAD_MANAGER}}</h2>
+                          </div>
+
+                          <div class="dm-settings">
+                            <span class="dm-settings-label">{{_DOWNLOAD_DIR}}</span>
+                            <span class="dm-settings-path" title="{{dl.downloadDir}}">{{dl.downloadDir}}</span>
+                            <button class="dm-settings-btn" ng-click="dl.chooseDownloadDir()">{{_CHOOSE_DIR}}</button>
+                            <button class="dm-settings-btn" ng-click="dl.resetDownloadDir()">{{_RESET_DIR}}</button>
+                          </div>
+
+                          <div class="dm-actions">
+                            <button class="dm-action-btn" ng-click="dl.pauseAll()" ng-disabled="dl.counts.active===0 && dl.counts.paused===0">{{_PAUSE_ALL}}</button>
+                            <button class="dm-action-btn" ng-click="dl.resumeAll()" ng-disabled="dl.counts.paused===0">{{_RESUME_ALL}}</button>
+                            <button class="dm-action-btn" ng-click="dl.retryAll()" ng-disabled="dl.counts.error===0">{{_RETRY_FAILED}}</button>
+                            <button class="dm-action-btn" ng-click="dl.clearFinished()" ng-disabled="dl.counts.done===0">{{_CLEAR_DOWNLOADS}}</button>
+                            <button class="dm-action-btn dm-action-btn--danger" ng-click="dl.clearAll()" ng-disabled="dl.counts.total===0">{{_CLEAR_ALL}}</button>
+                          </div>
+
+                          <div class="dm-filters">
+                            <button class="dm-filter" ng-class="{'active': dl.filter==='all'}" ng-click="dl.setFilter('all')">{{_DM_ALL}}</button>
+                            <button class="dm-filter" ng-class="{'active': dl.filter==='active'}" ng-click="dl.setFilter('active')">{{_DM_ACTIVE}}</button>
+                            <button class="dm-filter" ng-class="{'active': dl.filter==='done'}" ng-click="dl.setFilter('done')">{{_DM_COMPLETED}}</button>
+                            <button class="dm-filter" ng-class="{'active': dl.filter==='error'}" ng-click="dl.setFilter('error')">{{_DM_FAILED}}</button>
+                          </div>
+
+                          <div class="dm-list">
+                            <div class="download-task" ng-repeat="task in dl.filtered() track by task.id">
+                              <div class="download-task-main">
+                                <span class="dm-platform" title="{{task.track.source}}">{{ dl.platformLabel(task.track.source) }}</span>
+                                <div class="download-task-info">
+                                  <div class="download-task-row">
+                                    <span class="download-task-title">{{ task.track.title || task.track.id }}</span>
+                                    <span class="download-task-status" ng-class="{'is-error': task.status==='error', 'is-done': task.status==='done', 'is-paused': task.status==='paused'}">
+                                      <span ng-if="task.status==='pending'">{{_DM_QUEUED}}</span>
+                                      <span ng-if="task.status==='downloading'">{{_DOWNLOADING}}</span>
+                                      <span ng-if="task.status==='paused'">{{_DM_PAUSED}}</span>
+                                      <span ng-if="task.status==='done'">{{_DOWNLOAD_DONE}}</span>
+                                      <span ng-if="task.status==='error'" class="download-task-error">{{_DOWNLOAD_FAILED}}: {{task.error}}</span>
+                                    </span>
+                                  </div>
+                                  <div class="download-task-progress">
+                                    <div class="download-task-bar"><div class="download-task-bar-inner" ng-style="{width: (task.total ? (task.loaded/task.total*100) : (task.status==='done'?100:0)) + '%'}"></div></div>
+                                    <span class="download-task-percent" ng-if="task.total">{{ (task.loaded/task.total*100) | number:0 }}%</span>
+                                    <span class="download-task-meta" ng-if="(task.status==='downloading' || task.status==='paused') && task.total">{{ dl.formatSize(task.loaded) }} / {{ dl.formatSize(task.total) }}</span>
+                                    <span class="download-task-meta" ng-if="(task.status==='downloading' || task.status==='paused') && !task.total">{{ dl.formatSize(task.loaded) }}</span>
+                                    <span class="download-task-meta" ng-if="task.status==='downloading' && task.speed">{{ dl.formatSpeed(task.speed) }}</span>
+                                    <span class="download-task-meta" ng-if="task.status==='done'">{{ dl.formatSize(task.size) }}</span>
+                                  </div>
+                                </div>
+                                <div class="download-task-ops">
+                                  <button class="dm-op" ng-if="task.status==='downloading' || task.status==='pending'" ng-click="dl.pause(task.id)" title="{{_PAUSE}}"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
+                                  <button class="dm-op" ng-if="task.status==='paused'" ng-click="dl.resume(task.id)" title="{{_RESUME}}"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+                                  <button class="dm-op" ng-if="task.status==='error'" ng-click="dl.retry(task.id)" title="{{_RETRY}}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v5h-5"/></svg></button>
+                                  <button class="dm-op" ng-if="task.status==='done'" ng-click="dl.openFile(task.id)" title="{{_OPEN_FILE}}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></button>
+                                  <button class="dm-op" ng-if="task.status==='done'" ng-click="dl.openFolder(task.destPath)" title="{{_OPEN_FOLDER}}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button>
+                                  <button class="dm-op dm-op--danger" ng-click="dl.remove(task.id)" title="{{_REMOVE}}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="dm-empty" ng-if="dl.filtered().length === 0">
+                              <svg class="dm-empty-icon" viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                              <div class="dm-empty-text">{{_DM_EMPTY}}</div>
+                            </div>
+                          </div>
+                        </div>
                       <div class="navigation">
                         <div class="backfront">
                           <span class="icon li-back" ng-click="popWindow()"></span>
@@ -1738,7 +1814,7 @@
                                   </div>
                                   <div
                                     class="playlist-button download-mgr-button"
-                                    ng-click="showDialog(14)"
+                                    ng-click="showDownloadManager()"
                                   >
                                     <div class="play-list">
                                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -2644,6 +2720,17 @@
                             ><a>{{_PLAYLISTS}}</a>
                           </div>
                         </li>
+                        <li
+                          ng-class="{ 'active': current_tag==99 }"
+                          ng-click="showDownloadManager()"
+                        >
+                          <div ng-class="{'opensidebar':isOpenSidebar}" class="sidebar-block">
+                            <div>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            </div>
+                            <a>{{_DOWNLOAD_MANAGER}}</a>
+                          </div>
+                        </li>
                             </ul>
                             <div
                         ng-if="!isChrome || is_login('netease') || is_login('qq')"
@@ -2655,7 +2742,7 @@
                         <li
                           ng-if="!isChrome"
                           ng-click="showPlaylist('lmplaylist_reserve')"
-                          ng-class="{ 'active':window_type=='list' && ( '/playlist?list_id=lmplaylist_reserve' === getCurrentUrl() ) }"
+                          ng-class="{ 'active': current_tag!=99 && window_type=='list' && ( '/playlist?list_id=lmplaylist_reserve' === getCurrentUrl() ) }"
                         >
                           <div ng-class="{'opensidebar':isOpenSidebar}" class="sidebar-block">
                             <div>
@@ -2703,7 +2790,7 @@
                             <ul class="nav masthead-nav">
                         <li
                           ng-repeat="i in myplaylists track by $index"
-                          ng-class="{ 'active':window_type=='list' && ( ('/playlist?list_id='+i.info.id) === getCurrentUrl() ) }"
+                          ng-class="{ 'active': current_tag!=99 && window_type=='list' && ( ('/playlist?list_id='+i.info.id) === getCurrentUrl() ) }"
                           ng-click="showPlaylist(i.info.id)"
                           drag-drop-zone
                           drag-zone-type="'application/listen1-myplaylist'"
@@ -2725,7 +2812,7 @@
                             <ul class="nav masthead-nav">
                         <li
                           ng-repeat="i in favoriteplaylists track by $index"
-                          ng-class="{ 'active':window_type=='list' && ( ('/playlist?list_id='+i.info.id) === getCurrentUrl() ) }"
+                          ng-class="{ 'active': current_tag!=99 && window_type=='list' && ( ('/playlist?list_id='+i.info.id) === getCurrentUrl() ) }"
                           ng-click="showPlaylist(i.info.id, {useCache: false})"
                           drag-drop-zone
                           drag-zone-type="'application/listen1-favoriteplaylist'"
@@ -2746,6 +2833,73 @@
                   </div>
 
                   <div class="content" ng-controller="InstantSearchController">
+                        <div class="download-manager-page" ng-show="current_tag==99">
+                          <div class="dm-toolbar">
+                            <h2 class="dm-title">{{_DOWNLOAD_MANAGER}}</h2>
+                          </div>
+
+                          <div class="dm-settings">
+                            <span class="dm-settings-label">{{_DOWNLOAD_DIR}}</span>
+                            <span class="dm-settings-path" title="{{dl.downloadDir}}">{{dl.downloadDir}}</span>
+                            <button class="dm-settings-btn" ng-click="dl.chooseDownloadDir()">{{_CHOOSE_DIR}}</button>
+                            <button class="dm-settings-btn" ng-click="dl.resetDownloadDir()">{{_RESET_DIR}}</button>
+                          </div>
+
+                          <div class="dm-actions">
+                            <button class="dm-action-btn" ng-click="dl.pauseAll()" ng-disabled="dl.counts.active===0 && dl.counts.paused===0">{{_PAUSE_ALL}}</button>
+                            <button class="dm-action-btn" ng-click="dl.resumeAll()" ng-disabled="dl.counts.paused===0">{{_RESUME_ALL}}</button>
+                            <button class="dm-action-btn" ng-click="dl.retryAll()" ng-disabled="dl.counts.error===0">{{_RETRY_FAILED}}</button>
+                            <button class="dm-action-btn" ng-click="dl.clearFinished()" ng-disabled="dl.counts.done===0">{{_CLEAR_DOWNLOADS}}</button>
+                            <button class="dm-action-btn dm-action-btn--danger" ng-click="dl.clearAll()" ng-disabled="dl.counts.total===0">{{_CLEAR_ALL}}</button>
+                          </div>
+
+                          <div class="dm-filters">
+                            <button class="dm-filter" ng-class="{'active': dl.filter==='all'}" ng-click="dl.setFilter('all')">{{_DM_ALL}}</button>
+                            <button class="dm-filter" ng-class="{'active': dl.filter==='active'}" ng-click="dl.setFilter('active')">{{_DM_ACTIVE}}</button>
+                            <button class="dm-filter" ng-class="{'active': dl.filter==='done'}" ng-click="dl.setFilter('done')">{{_DM_COMPLETED}}</button>
+                            <button class="dm-filter" ng-class="{'active': dl.filter==='error'}" ng-click="dl.setFilter('error')">{{_DM_FAILED}}</button>
+                          </div>
+
+                          <div class="dm-list">
+                            <div class="download-task" ng-repeat="task in dl.filtered() track by task.id">
+                              <div class="download-task-main">
+                                <span class="dm-platform" title="{{task.track.source}}">{{ dl.platformLabel(task.track.source) }}</span>
+                                <div class="download-task-info">
+                                  <div class="download-task-row">
+                                    <span class="download-task-title">{{ task.track.title || task.track.id }}</span>
+                                    <span class="download-task-status" ng-class="{'is-error': task.status==='error', 'is-done': task.status==='done', 'is-paused': task.status==='paused'}">
+                                      <span ng-if="task.status==='pending'">{{_DM_QUEUED}}</span>
+                                      <span ng-if="task.status==='downloading'">{{_DOWNLOADING}}</span>
+                                      <span ng-if="task.status==='paused'">{{_DM_PAUSED}}</span>
+                                      <span ng-if="task.status==='done'">{{_DOWNLOAD_DONE}}</span>
+                                      <span ng-if="task.status==='error'" class="download-task-error">{{_DOWNLOAD_FAILED}}: {{task.error}}</span>
+                                    </span>
+                                  </div>
+                                  <div class="download-task-progress">
+                                    <div class="download-task-bar"><div class="download-task-bar-inner" ng-style="{width: (task.total ? (task.loaded/task.total*100) : (task.status==='done'?100:0)) + '%'}"></div></div>
+                                    <span class="download-task-percent" ng-if="task.total">{{ (task.loaded/task.total*100) | number:0 }}%</span>
+                                    <span class="download-task-meta" ng-if="(task.status==='downloading' || task.status==='paused') && task.total">{{ dl.formatSize(task.loaded) }} / {{ dl.formatSize(task.total) }}</span>
+                                    <span class="download-task-meta" ng-if="(task.status==='downloading' || task.status==='paused') && !task.total">{{ dl.formatSize(task.loaded) }}</span>
+                                    <span class="download-task-meta" ng-if="task.status==='downloading' && task.speed">{{ dl.formatSpeed(task.speed) }}</span>
+                                    <span class="download-task-meta" ng-if="task.status==='done'">{{ dl.formatSize(task.size) }}</span>
+                                  </div>
+                                </div>
+                                <div class="download-task-ops">
+                                  <button class="dm-op" ng-if="task.status==='downloading' || task.status==='pending'" ng-click="dl.pause(task.id)" title="{{_PAUSE}}"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
+                                  <button class="dm-op" ng-if="task.status==='paused'" ng-click="dl.resume(task.id)" title="{{_RESUME}}"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+                                  <button class="dm-op" ng-if="task.status==='error'" ng-click="dl.retry(task.id)" title="{{_RETRY}}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v5h-5"/></svg></button>
+                                  <button class="dm-op" ng-if="task.status==='done'" ng-click="dl.openFile(task.id)" title="{{_OPEN_FILE}}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></button>
+                                  <button class="dm-op" ng-if="task.status==='done'" ng-click="dl.openFolder(task.destPath)" title="{{_OPEN_FOLDER}}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></button>
+                                  <button class="dm-op dm-op--danger" ng-click="dl.remove(task.id)" title="{{_REMOVE}}"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="dm-empty" ng-if="dl.filtered().length === 0">
+                              <svg class="dm-empty-icon" viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                              <div class="dm-empty-text">{{_DM_EMPTY}}</div>
+                            </div>
+                          </div>
+                        </div>
                     <div class="navigation">
                       <div class="backfront">
                         <svg  fill="currentColor" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="angle-left" class="svg-inline--fa fa-angle-left fa-w-8 icon li-back" ng-click="popWindow()" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"><path fill="currentColor" d="M31.7 239l136-136c9.4-9.4 24.6-9.4 33.9 0l22.6 22.6c9.4 9.4 9.4 24.6 0 33.9L127.9 256l96.4 96.4c9.4 9.4 9.4 24.6 0 33.9L201.7 409c-9.4 9.4-24.6 9.4-33.9 0l-136-136c-9.5-9.4-9.5-24.6-.1-34z"></path></svg>
@@ -3976,7 +4130,7 @@
                                 </div>
                                 <div
                                   class="playlist-button download-mgr-button"
-                                  ng-click="showDialog(14)"
+                                  ng-click="showDownloadManager()"
                                 >
                                   <div class="play-list">
                                     <svg class="icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 3l5 5h-3v6h-4V8H7l5-5zM5 19h14v2H5v-2z"/></svg>

@@ -31,6 +31,7 @@ angular.module('listenone').controller('NavigationController', [
     $scope.lastfm = lastfm;
 
     $scope.isOpenSidebar = true;
+    $scope.dl = downloadManager;
 
     $scope.$on('isdoubanlogin:update', (event, data) => {
       $scope.isDoubanLogin = data;
@@ -164,6 +165,9 @@ angular.module('listenone').controller('NavigationController', [
 
     $scope.showPlaylist = (list_id, useCache) => {
       $scope.clearFilter();
+      // Leaving the dedicated download-manager tab (current_tag===99): reset to
+      // the music section so its overlay hides and the playlist window can show.
+      $scope.current_tag = 2;
       const url = `/playlist?list_id=${list_id}`;
       // save current scrolltop
       const offset = document.getElementsByClassName('browser')[0].scrollTop;
@@ -317,7 +321,15 @@ angular.module('listenone').controller('NavigationController', [
       }
       downloadManager.enqueueMany(list);
       notyf.success(i18next.t('_DOWNLOAD_QUEUED'));
-      $scope.showDialog(14);
+      $scope.showDownloadManager();
+    };
+
+    $scope.showDownloadManager = () => {
+      $scope.current_tag = 99;
+      $scope.is_window_hidden = 1;
+      $scope.is_dialog_hidden = 1;
+      $scope.dialog_type = 0;
+      $scope.dl = downloadManager;
     };
 
     $scope.onSidebarPlaylistDrop = (

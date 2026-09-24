@@ -1,4 +1,4 @@
-const { existsSync, mkdirSync, createWriteStream } = require("fs");
+const { existsSync, mkdirSync, createWriteStream, statSync } = require("fs");
 const { readdir, readFile } = require("fs/promises");
 const { parseFile } = require("music-metadata");
 const { basename, extname, parse, format, join } = require("path");
@@ -157,8 +157,26 @@ function pickDownloadDir() {
   return join(base, "Listen1");
 }
 
+const activeDownloads = {};
+
+function abortDownload(id) {
+  const rec = activeDownloads[id];
+  if (rec) {
+    rec.aborted = true;
+    if (rec.ac && rec.ac.abort) rec.ac.abort();
+  }
+}
+
 function downloadTrack(opts, onProgress, onDone, onError) {
-  const { url, headers, destDir, fileName, timeout = 30000 } = opts || {};
+  const {
+    url,
+    headers,
+    destDir,
+    fileName,
+    timeout = 30000,
+    id = null,
+    startBytes = 0,
+  } = opts || {};
   if (!url) {
     const e = new Error("downloadTrack: missing url");
     if (onError) onError(e);
@@ -170,13 +188,50 @@ function downloadTrack(opts, onProgress, onDone, onError) {
   const destPath = join(dir, safeName);
   const reqHeaders = resolveHeaders(url, headers);
 
+  const ac = new AbortController();
+  if (id != null) activeDownloads[id] = { ac, aborted: false };
+
+  // Resume support: re-request a byte range to continue a partial file. Progress
+  // reports are throttled, so the bytes already on disk are the authoritative
+  // resume point — use the larger of the caller's hint and the actual file size.
+  let resumeFrom = startBytes || 0;
+  try {
+    const st = statSync(destPath);
+    if (st.isFile() && st.size > resumeFrom) resumeFrom = st.size;
+  } catch (e) {
+    /* no partial file yet */
+  }
+  let append = resumeFrom > 0;
+  if (append) {
+    reqHeaders["Range"] = `bytes=${resumeFrom}-`;
+  }
+
   return new Promise((resolve, reject) => {
     let lastReport = 0;
-    const report = (loaded, total) => {
+    let loaded = resumeFrom;
+    let total = 0;
+    let out = null;
+
+    const cleanup = () => {
+      if (id != null) delete activeDownloads[id];
+    };
+
+    const ensureStream = (wantAppend) => {
+      if (out) {
+        try {
+          out.destroy();
+        } catch (e) {
+          /* ignore */
+        }
+      }
+      out = createWriteStream(destPath, { flags: wantAppend ? "a" : "w" });
+    };
+
+    const report = (ld, tt) => {
       const now = Date.now();
-      if (now - lastReport >= 200) {
+      if (now - lastReport >= 200 || (tt && ld >= tt)) {
         lastReport = now;
-        if (onProgress) onProgress(loaded, total);
+        if (onProgress) onProgress(ld, tt);
       }
     };
 
@@ -198,8 +253,18 @@ function downloadTrack(opts, onProgress, onDone, onError) {
       const client = parsed.protocol === "http:" ? http : https;
       const req = client.get(
         targetUrl,
-        { headers: reqHeaders, timeout },
+        { headers: reqHeaders, timeout, signal: ac.signal },
         (res) => {
+          // Server ignored our Range request (or a redirect dropped it): restart
+          // cleanly from the beginning.
+          if (append && res.statusCode === 200) {
+            append = false;
+            loaded = 0;
+            ensureStream(false);
+          } else if (!out) {
+            ensureStream(append);
+          }
+
           if (
             res.statusCode >= 300 &&
             res.statusCode < 400 &&
@@ -210,7 +275,7 @@ function downloadTrack(opts, onProgress, onDone, onError) {
             tryRequest(next, depth + 1);
             return;
           }
-          if (res.statusCode !== 200) {
+          if (res.statusCode !== 200 && res.statusCode !== 206) {
             res.resume();
             const e = new Error(
               `downloadTrack: HTTP ${res.statusCode} for ${targetUrl}`
@@ -219,28 +284,48 @@ function downloadTrack(opts, onProgress, onDone, onError) {
             reject(e);
             return;
           }
-          const total = parseInt(res.headers["content-length"] || "0", 10);
-          const out = createWriteStream(destPath);
-          let loaded = 0;
+
+          total = parseInt(res.headers["content-length"] || "0", 10);
+          if (append && res.statusCode === 206) {
+            const rangeTotal = parseInt(
+              (res.headers["content-range"] || "").split("/").pop() || "0",
+              10
+            );
+            if (rangeTotal) total = rangeTotal;
+          }
+
+          if (!out) ensureStream(append);
           res.on("data", (chunk) => {
             loaded += chunk.length;
             report(loaded, total);
           });
           out.on("error", (e) => {
+            if (ac.signal.aborted) return;
             if (onError) onError(e);
             reject(e);
           });
           res.pipe(out);
           out.on("finish", () => {
+            if (ac.signal.aborted) return; // abort races the finish event
             if (onProgress) onProgress(loaded, total);
             const result = { destPath, fileName: safeName, size: loaded };
+            cleanup();
             if (onDone) onDone(result);
             resolve(result);
           });
         }
       );
       req.on("error", (e) => {
+        if (ac.signal.aborted) {
+          // Surface the abort to the caller via onDone so the orchestrator can
+          // decide between pause vs cancel — never treat it as a hard error.
+          if (onDone) onDone({ aborted: true, destPath, fileName: safeName });
+          cleanup();
+          resolve({ aborted: true });
+          return;
+        }
         if (onError) onError(e);
+        cleanup();
         reject(e);
       });
       req.on("timeout", () => {
@@ -258,6 +343,7 @@ function downloadTrack(opts, onProgress, onDone, onError) {
 module.exports = {
   ...module.exports,
   downloadTrack,
+  abortDownload,
   sanitizeFileName,
   pickDownloadDir,
   resolveHeaders,

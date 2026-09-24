@@ -2891,3 +2891,293 @@ ul.detail-songlist li .tools .detail-download-button:hover .icon {
   font-size: 12px;
   padding: 4px 10px;
 }
+
+/* download manager page (dedicated tab) */
+.main .content {
+  position: relative;
+}
+.download-manager-page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--dialog-background-color);
+  color: var(--dialog-text-color);
+  padding: 20px 24px;
+  overflow-y: auto;
+}
+.dm-toolbar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.dm-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+.dm-settings {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(128, 128, 128, 0.25);
+  border-radius: 6px;
+  margin-bottom: 14px;
+}
+.dm-settings-label {
+  font-size: 13px;
+  color: var(--text-default-color, #ccc);
+  font-weight: 600;
+}
+.dm-settings-path {
+  flex: 1;
+  min-width: 120px;
+  font-size: 12px;
+  color: #9d9d9d;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dm-settings-btn {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.dm-settings-btn:hover {
+  border-color: var(--theme-color, #4a90d2);
+}
+.dm-desc {
+  font-size: 12px;
+  color: #9d9d9d;
+  margin-bottom: 10px;
+}
+.dm-list {
+  flex: 1;
+  overflow-y: auto;
+}
+.dm-empty {
+  color: #9d9d9d;
+  font-size: 13px;
+  padding: 16px 0;
+}
+.dm-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.dm-footer-btn {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.dm-footer-btn:hover {
+  border-color: var(--theme-color, #4a90d2);
+}
+
+/* download manager page — enhanced layout */
+.dm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.dm-action-btn {
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 5px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.dm-action-btn:hover:not(:disabled) {
+  border-color: var(--theme-color, #4a90d2);
+  color: var(--theme-color, #4a90d2);
+}
+.dm-action-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.dm-action-btn--danger:hover:not(:disabled) {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+.dm-filters {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.dm-filter {
+  font-size: 12px;
+  padding: 4px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  background: transparent;
+  color: #9d9d9d;
+  cursor: pointer;
+}
+.dm-filter.active {
+  background: var(--theme-color, #4a90d2);
+  border-color: var(--theme-color, #4a90d2);
+  color: #fff;
+}
+.dm-list {
+  flex: 1;
+  overflow-y: auto;
+}
+.download-task {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.download-task-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.dm-platform {
+  flex: 0 0 auto;
+  min-width: 36px;
+  height: 22px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #cfcfcf;
+}
+.download-task-info {
+  flex: 1;
+  min-width: 0;
+}
+.download-task-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.download-task-title {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  margin-right: 8px;
+}
+.download-task-status {
+  font-size: 12px;
+  color: #9d9d9d;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.download-task-status.is-done {
+  color: #4caf50;
+}
+.download-task-status.is-paused {
+  color: #f0a020;
+}
+.download-task-status.is-error {
+  color: #e74c3c;
+}
+.download-task-error {
+  color: #e74c3c;
+}
+.download-task-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.download-task-bar {
+  flex: 1;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.download-task-bar-inner {
+  height: 100%;
+  background: var(--theme-color, #4a90d2);
+  transition: width 0.25s ease;
+}
+.download-task-percent {
+  font-size: 11px;
+  color: #9d9d9d;
+  flex: 0 0 auto;
+  min-width: 34px;
+  text-align: right;
+}
+.download-task-meta {
+  font-size: 11px;
+  color: #8a8a8a;
+  flex: 0 0 auto;
+}
+.download-task-ops {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0.35;
+  transition: opacity 0.15s ease;
+}
+.download-task-main:hover .download-task-ops {
+  opacity: 1;
+}
+.dm-op {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #d0d0d0;
+  cursor: pointer;
+}
+.dm-op:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+.dm-op--danger:hover {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+}
+.dm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 0;
+  color: #9d9d9d;
+}
+.dm-empty-icon {
+  opacity: 0.4;
+}
+.dm-empty-text {
+  font-size: 13px;
+  text-align: center;
+  max-width: 320px;
+  line-height: 1.5;
+}
