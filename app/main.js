@@ -343,8 +343,11 @@ function createWindow() {
   });
 
   mainWindow.on("ready-to-show", () => {
-    if (windowState.maximized) {
-      mainWindow.maximize();
+    // 启动时不恢复最大化/全屏状态，始终以保存的窗口尺寸窗口化打开，
+    // 避免曾经最大化后每次启动都全屏铺满。
+    windowState.maximized = false;
+    if (mainWindow.isFullScreen()) {
+      mainWindow.setFullScreen(false);
     }
     mainWindow.webContents.send("setZoomLevel", windowState.zoomLevel);
   });

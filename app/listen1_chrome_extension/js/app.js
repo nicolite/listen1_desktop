@@ -9,32 +9,8 @@
 
 const sourceList = [
   {
-    name: 'netease',
-    displayId: '_NETEASE_MUSIC',
-  },
-  {
-    name: 'qq',
-    displayId: '_QQ_MUSIC',
-  },
-  {
-    name: 'kugou',
-    displayId: '_KUGOU_MUSIC',
-  },
-  {
-    name: 'kuwo',
-    displayId: '_KUWO_MUSIC',
-  },
-  {
     name: 'bilibili',
     displayId: '_BILIBILI_MUSIC',
-  },
-  {
-    name: 'migu',
-    displayId: '_MIGU_MUSIC',
-  },
-  {
-    name: 'taihe',
-    displayId: '_TAIHE_MUSIC',
   },
 ];
 
