@@ -42,21 +42,13 @@
     "*://*.migu.cn/*",
     "*://*.taihe.com/*",
     "*://music.91q.com/*",
-    "*://api.github.com/*",
-    "*://github.com/*",
-    "*://gist.githubusercontent.com/*"
+    "*://api.github.com/*"
   ],
   "version": "2.33.0",
   "web_accessible_resources": [
     {
       "resources": ["images/*"],
       "matches": ["*://*/*"]
-    }
-  ],
-  "content_scripts": [
-    {
-      "matches": ["https://listen1.github.io/listen1/*"],
-      "js": ["js/oauth_callback.js"]
     }
   ]
 }

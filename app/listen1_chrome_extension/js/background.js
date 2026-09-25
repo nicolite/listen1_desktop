@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-/* global GithubClient */
 chrome.action.onClicked.addListener((tab) => {
   chrome.tabs.create(
     {
@@ -197,17 +196,3 @@ chrome.action.onClicked.addListener((tab) => {
 //     ['requestHeaders', 'blocking']
 //   );
 // }
-
-
-/**
- * Get tokens.
- */
-
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type !== 'code') {
-    return;
-  }
-
-  GithubClient.github.handleCallback(request.code);
-  sendResponse();
-});

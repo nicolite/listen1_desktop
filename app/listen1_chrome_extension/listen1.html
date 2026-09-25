@@ -43,8 +43,6 @@
     <script type="text/javascript" src="js/vendor/lru-cache.min.js"></script>
 
     <script type="text/javascript" src="js/lowebutil.js"></script>
-    <script type="text/javascript" src="js/github.js"></script>
-    <script type="text/javascript" src="js/lastfm.js"></script>
     <script type="text/javascript" src="js/provider/xiami.js"></script>
     <script type="text/javascript" src="js/provider/qq.js"></script>
     <script type="text/javascript" src="js/provider/netease.js"></script>
@@ -281,24 +279,6 @@
                           </button>
                         </div>
                       </div>
-                      <div class="dialog-connect-lastfm" ng-show="dialog_type==4">
-                        <p>{{_OPENING_LASTFM_PAGE}}</p>
-                        <p>{{_CONFIRM_NOTICE_LASTFM}}</p>
-                        <div class="buttons">
-                          <button
-                            class="btn btn-primary confirm-button"
-                            ng-click="lastfm.updateStatus();closeDialog();"
-                          >
-                            {{_AUTHORIZED_FINISHED}}
-                          </button>
-                          <button
-                            class="btn btn-warning warning-button"
-                            ng-click="lastfm.getAuth();"
-                          >
-                            {{_AUTHORIZED_REOPEN}}
-                          </button>
-                        </div>
-                      </div>
                       <!-- open playlist dialog-->
                       <div class="dialog-open-url" ng-show="dialog_type==5">
                         <div class="form-group">
@@ -331,74 +311,6 @@
                         >
                           <img ng-src="{{ playlist.info.cover_img_url }}" />
                           <h2>{{ playlist.info.title }}</h2>
-                        </li>
-                      </ul>
-                      <div class="dialog-connect-github" ng-show="dialog_type==7">
-                        <p>{{_OPENING_GITHUB_PAGE}}</p>
-                        <p>{{_CONFIRM_NOTICE_GITHUB}}</p>
-                        <div class="buttons">
-                          <button
-                            class="btn btn-primary confirm-button"
-                            ng-click="updateGithubStatus();closeDialog();"
-                          >
-                            {{_AUTHORIZED_FINISHED}}
-                          </button>
-                          <button
-                            class="btn btn-warning warning-button"
-                            ng-click="openGithubAuth();"
-                          >
-                            {{_AUTHORIZED_REOPEN}}
-                          </button>
-                        </div>
-                      </div>
-                      <ul class="dialog-backuplist" ng-show="dialog_type==8">
-                        <li class="detail-add" ng-click="newDialogOption(9)">
-                          <img src="images/mycover.jpg" />
-                          <h2>{{_CREATE_PLAYLIST_BACKUP}}</h2>
-                        </li>
-                        <li
-                          ng-repeat="backup in myBackup track by $index"
-                          ng-class-odd="'odd'"
-                          ng-class-even="'even'"
-                          ng-click="backupMySettings2Gist(backup.id, backup.public); closeDialog();"
-                        >
-                          <img ng-src="images/mycover.jpg" />
-                          <h2>
-                            {{ backup.id }}<br />
-                            {{backup.description}}
-                          </h2>
-                        </li>
-                      </ul>
-                      <!-- create new backup dialog-->
-                      <div class="dialog-newbackup" ng-show="dialog_type==9">
-                        <button
-                          class="btn btn-primary confirm-button"
-                          ng-click="backupMySettings2Gist(null, true);closeDialog();"
-                        >
-                          {{_CREATE_PUBLIC_BACKUP}}
-                        </button>
-                        <button
-                          class="btn btn-primary confirm-button"
-                          ng-click="backupMySettings2Gist(null, false);closeDialog();"
-                        >
-                          {{_CREATE_PRIVATE_BACKUP}}
-                        </button>
-                        <button
-                          class="btn btn-default"
-                          ng-click="cancelNewDialog(8)"
-                        >
-                          {{_CANCEL}}
-                        </button>
-                      </div>
-                      <ul class="dialog-backuplist" ng-show="dialog_type==10">
-                        <li
-                          ng-repeat="backup in myBackup track by $index"
-                          ng-class-odd="'odd'"
-                          ng-class-even="'even'"
-                          ng-click="importMySettingsFromGist(backup.id); closeDialog();"
-                        >
-                          <img ng-src="images/mycover.jpg" />
-                          <h2>{{ backup.id }} {{backup.description}}</h2>
                         </li>
                       </ul>
                       <div class="dialog-proxy" ng-show="dialog_type==12">
@@ -985,8 +897,7 @@
                         <div
                           class="page"
                           ng-show="current_tag==4 && is_window_hidden==1"
-                          ng-init="lastfm.updateStatus(); updateGithubStatus();"
-                        >
+                                                 >
                           <div class="site-wrapper-innerd">
                             <div class="cover-container">
                               <div class="settings-title">
@@ -1289,13 +1200,6 @@
                                   >
                                     {{_EXPORT_TO_LOCAL_FILE}}
                                   </button>
-                                  <button
-                                    class="btn btn-primary confirm-button"
-                                    ng-show="githubStatus == 2"
-                                    ng-click="showDialog(8)"
-                                  >
-                                    {{_EXPORT_TO_GITHUB_GIST}}
-                                  </button>
                                 </div>
                               </div>
                               <div class="settings-title">
@@ -1312,73 +1216,6 @@
                                     custom-on-change="importMySettings"
                                   />{{_RECOVER_FROM_LOCAL_FILE}}
                                 </label>
-                                <button
-                                  class="btn btn-warning confirm-button"
-                                  ng-show="githubStatus == 2"
-                                  ng-click="showDialog(10)"
-                                >
-                                  {{_RECOVER_FROM_GITHUB_GIST}}
-                                </button>
-                              </div>
-    
-                              <div class="settings-title">
-                                <span>{{_CONNECT_TO_GITHUB}}</span>
-                              </div>
-                              <div class="settings-content">
-                                <div>
-                                  <p>{{_STATUS}}：{{ githubStatusText }}</p>
-                                  <button
-                                    class="btn btn-primary confirm-button"
-                                    ng-show="githubStatus == 0"
-                                    ng-click="openGithubAuth(); showDialog(7);"
-                                  >
-                                    {{_CONNECT_TO_GITHUB}}
-                                  </button>
-                                  <button
-                                    class="btn btn-warning confirm-button"
-                                    ng-show="githubStatus == 1"
-                                    ng-click="showDialog(7);"
-                                  >
-                                    {{_RECONNECT}}
-                                  </button>
-                                  <button
-                                    class="btn btn-primary confirm-button"
-                                    ng-show="githubStatus == 2"
-                                    ng-click="GithubLogout();"
-                                  >
-                                    {{_CANCEL_CONNECT}}
-                                  </button>
-                                </div>
-                              </div>
-    
-                              <div class="settings-title">
-                                <span>{{_CONNECT_TO_LASTFM}}</span>
-                              </div>
-                              <div class="settings-content">
-                                <div>
-                                  <p>{{_STATUS}}：{{ lastfm.getStatusText() }}</p>
-                                  <button
-                                    class="btn btn-primary confirm-button"
-                                    ng-show="!lastfm.isAuthRequested()"
-                                    ng-click="lastfm.getAuth(); showDialog(4);"
-                                  >
-                                    {{_CONNECT_TO_LASTFM}}
-                                  </button>
-                                  <button
-                                    class="btn btn-warning confirm-button"
-                                    ng-show="lastfm.isAuthRequested() && !lastfm.isAuthorized()"
-                                    ng-click="lastfm.getAuth(); showDialog(4);"
-                                  >
-                                    {{_RECONNECT}}
-                                  </button>
-                                  <button
-                                    class="btn btn-primary confirm-button"
-                                    ng-show="lastfm.isAuthRequested()"
-                                    ng-click="lastfm.cancelAuth();"
-                                  >
-                                    {{_CANCEL_CONNECT}}
-                                  </button>
-                                </div>
                               </div>
                               <div class="settings-title">
                                 <span>{{_SHORTCUTS}}</span>
@@ -2372,24 +2209,6 @@
                         </button>
                       </div>
                     </div>
-                    <div class="dialog-connect-lastfm" ng-show="dialog_type==4">
-                      <p>{{_OPENING_LASTFM_PAGE}}</p>
-                      <p>{{_CONFIRM_NOTICE_LASTFM}}</p>
-                      <div class="buttons">
-                        <button
-                          class="btn btn-primary confirm-button"
-                          ng-click="lastfm.updateStatus();closeDialog();"
-                        >
-                          {{_AUTHORIZED_FINISHED}}
-                        </button>
-                        <button
-                          class="btn btn-warning warning-button"
-                          ng-click="lastfm.getAuth();"
-                        >
-                          {{_AUTHORIZED_REOPEN}}
-                        </button>
-                      </div>
-                    </div>
                     <!-- open playlist dialog-->
                     <div class="dialog-open-url" ng-show="dialog_type==5">
                       <div class="form-group">
@@ -2422,74 +2241,6 @@
                       >
                         <img err-src="https://y.gtimg.cn/mediastyle/global/img/playlist_300.png" ng-src="{{ playlist.info.cover_img_url }}" />
                         <h2>{{ playlist.info.title }}</h2>
-                      </li>
-                    </ul>
-                    <div class="dialog-connect-github" ng-show="dialog_type==7">
-                      <p>{{_OPENING_GITHUB_PAGE}}</p>
-                      <p>{{_CONFIRM_NOTICE_GITHUB}}</p>
-                      <div class="buttons">
-                        <button
-                          class="btn btn-primary confirm-button"
-                          ng-click="updateGithubStatus();closeDialog();"
-                        >
-                          {{_AUTHORIZED_FINISHED}}
-                        </button>
-                        <button
-                          class="btn btn-warning warning-button"
-                          ng-click="openGithubAuth();"
-                        >
-                          {{_AUTHORIZED_REOPEN}}
-                        </button>
-                      </div>
-                    </div>
-                    <ul class="dialog-backuplist" ng-show="dialog_type==8">
-                      <li class="detail-add" ng-click="newDialogOption(9)">
-                        <img err-src="https://y.gtimg.cn/mediastyle/global/img/playlist_300.png" src="images/mycover.jpg" />
-                        <h2>{{_CREATE_PLAYLIST_BACKUP}}</h2>
-                      </li>
-                      <li
-                        ng-repeat="backup in myBackup track by $index"
-                        ng-class-odd="'odd'"
-                        ng-class-even="'even'"
-                        ng-click="backupMySettings2Gist(backup.id, backup.public); closeDialog();"
-                      >
-                        <img err-src="https://y.gtimg.cn/mediastyle/global/img/playlist_300.png" ng-src="images/mycover.jpg" />
-                        <h2>
-                          {{ backup.id }}<br />
-                          {{backup.description}}
-                        </h2>
-                      </li>
-                    </ul>
-                    <!-- create new backup dialog-->
-                    <div class="dialog-newbackup" ng-show="dialog_type==9">
-                      <button
-                        class="btn btn-primary confirm-button"
-                        ng-click="backupMySettings2Gist(null, true);closeDialog();"
-                      >
-                        {{_CREATE_PUBLIC_BACKUP}}
-                      </button>
-                      <button
-                        class="btn btn-primary confirm-button"
-                        ng-click="backupMySettings2Gist(null, false);closeDialog();"
-                      >
-                        {{_CREATE_PRIVATE_BACKUP}}
-                      </button>
-                      <button
-                        class="btn btn-default"
-                        ng-click="cancelNewDialog(8)"
-                      >
-                        {{_CANCEL}}
-                      </button>
-                    </div>
-                    <ul class="dialog-backuplist" ng-show="dialog_type==10">
-                      <li
-                        ng-repeat="backup in myBackup track by $index"
-                        ng-class-odd="'odd'"
-                        ng-class-even="'even'"
-                        ng-click="importMySettingsFromGist(backup.id); closeDialog();"
-                      >
-                        <img err-src="https://y.gtimg.cn/mediastyle/global/img/playlist_300.png" ng-src="images/mycover.jpg" />
-                        <h2>{{ backup.id }} {{backup.description}}</h2>
                       </li>
                     </ul>
                     <div class="dialog-proxy" ng-show="dialog_type==12">
@@ -3148,8 +2899,7 @@
                       <div
                         class="page"
                         ng-show="current_tag==4 && is_window_hidden==1"
-                        ng-init="lastfm.updateStatus(); updateGithubStatus();"
-                      >
+                                             >
                         <div class="site-wrapper-innerd">
                           <div class="cover-container">
                             <div class="settings-title">
@@ -3446,13 +3196,6 @@
                                 >
                                   {{_EXPORT_TO_LOCAL_FILE}}
                                 </button>
-                                <button
-                                  class="btn btn-primary confirm-button"
-                                  ng-show="githubStatus == 2"
-                                  ng-click="showDialog(8)"
-                                >
-                                  {{_EXPORT_TO_GITHUB_GIST}}
-                                </button>
                               </div>
                             </div>
                             <div class="settings-title">
@@ -3469,73 +3212,6 @@
                                   custom-on-change="importMySettings"
                                 />{{_RECOVER_FROM_LOCAL_FILE}}
                               </label>
-                              <button
-                                class="btn btn-warning confirm-button"
-                                ng-show="githubStatus == 2"
-                                ng-click="showDialog(10)"
-                              >
-                                {{_RECOVER_FROM_GITHUB_GIST}}
-                              </button>
-                            </div>
-
-                            <div class="settings-title">
-                              <span>{{_CONNECT_TO_GITHUB}}</span>
-                            </div>
-                            <div class="settings-content">
-                              <div>
-                                <p>{{_STATUS}}：{{ githubStatusText }}</p>
-                                <button
-                                  class="btn btn-primary confirm-button"
-                                  ng-show="githubStatus == 0"
-                                  ng-click="openGithubAuth(); showDialog(7);"
-                                >
-                                  {{_CONNECT_TO_GITHUB}}
-                                </button>
-                                <button
-                                  class="btn btn-warning confirm-button"
-                                  ng-show="githubStatus == 1"
-                                  ng-click="showDialog(7);"
-                                >
-                                  {{_RECONNECT}}
-                                </button>
-                                <button
-                                  class="btn btn-primary confirm-button"
-                                  ng-show="githubStatus == 2"
-                                  ng-click="GithubLogout();"
-                                >
-                                  {{_CANCEL_CONNECT}}
-                                </button>
-                              </div>
-                            </div>
-
-                            <div class="settings-title">
-                              <span>{{_CONNECT_TO_LASTFM}}</span>
-                            </div>
-                            <div class="settings-content">
-                              <div>
-                                <p>{{_STATUS}}：{{ lastfm.getStatusText() }}</p>
-                                <button
-                                  class="btn btn-primary confirm-button"
-                                  ng-show="!lastfm.isAuthRequested()"
-                                  ng-click="lastfm.getAuth(); showDialog(4);"
-                                >
-                                  {{_CONNECT_TO_LASTFM}}
-                                </button>
-                                <button
-                                  class="btn btn-warning confirm-button"
-                                  ng-show="lastfm.isAuthRequested() && !lastfm.isAuthorized()"
-                                  ng-click="lastfm.getAuth(); showDialog(4);"
-                                >
-                                  {{_RECONNECT}}
-                                </button>
-                                <button
-                                  class="btn btn-primary confirm-button"
-                                  ng-show="lastfm.isAuthRequested()"
-                                  ng-click="lastfm.cancelAuth();"
-                                >
-                                  {{_CANCEL_CONNECT}}
-                                </button>
-                              </div>
                             </div>
                             <div class="settings-title">
                               <span>{{_SHORTCUTS}}</span>

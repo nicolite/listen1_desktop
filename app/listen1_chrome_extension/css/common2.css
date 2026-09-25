@@ -2536,11 +2536,6 @@ svg.searchspinner {
   border-radius: 10px;
   transition: 0.2s;
 }
-.dialog-backuplist li {
-  height: 96px;
-  padding: 6px;
-}
-
 .dialog-playlist li:hover,
 .dialog-backuplist li:hover,
 .dialog-merge-playlist li:hover {
@@ -2563,15 +2558,8 @@ svg.searchspinner {
   font-size: 13px;
   font-weight: inherit;
 }
-.dialog-backuplist li h2 {
-  margin-top: 0;
-}
 .dialog-newplaylist {
   padding: 10px;
-}
-
-.dialog-newbackup {
-  text-align: center;
 }
 
 .dialog-editplaylist label,

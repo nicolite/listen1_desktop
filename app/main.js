@@ -299,27 +299,13 @@ function createWindow() {
       "*://*.bilivideo.com/*",
       "*://*.bilivideo.cn/*",
       "*://*.migu.cn/*",
-      "*://*.githubusercontent.com/*",
-      "https://listen1.github.io/listen1/callback.html?code=*",
     ],
   };
 
   session.defaultSession.webRequest.onBeforeSendHeaders(
     filter,
     (details, callback) => {
-      if (
-        details.url.startsWith(
-          "https://listen1.github.io/listen1/callback.html?code="
-        )
-      ) {
-        const { url } = details;
-        const code = url.split("=")[1];
-        mainWindow.webContents.executeJavaScript(
-          'GithubClient.github.handleCallback("' + code + '");'
-        );
-      } else {
-        hack_referer_header(details);
-      }
+      hack_referer_header(details);
       callback({ cancel: false, requestHeaders: details.requestHeaders });
     }
   );
@@ -497,9 +483,6 @@ function hack_referer_header(details) {
   }
   if (details.url.includes("://interface3.music.163.com/")) {
     referer_value = "http://music.163.com/";
-  }
-  if (details.url.includes("://gist.githubusercontent.com/")) {
-    referer_value = "https://gist.githubusercontent.com/";
   }
 
   if (details.url.includes(".xiami.com/")) {

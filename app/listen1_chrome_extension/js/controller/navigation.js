@@ -3,7 +3,7 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-param-reassign */
-/* global angular notyf i18next MediaService l1Player hotkeys isElectron require GithubClient lastfm */
+/* global angular notyf i18next MediaService l1Player hotkeys isElectron require */
 // control main view of page, it can be called any place
 angular.module('listenone').controller('NavigationController', [
   '$scope',
@@ -27,8 +27,6 @@ angular.module('listenone').controller('NavigationController', [
     $scope.dialog_title = '';
 
     $scope.isDoubanLogin = false;
-
-    $scope.lastfm = lastfm;
 
     $scope.isOpenSidebar = true;
     $scope.dl = downloadManager;
@@ -254,9 +252,6 @@ angular.module('listenone').controller('NavigationController', [
         $scope.dialog_cover_img_url = data.cover_img_url;
         $scope.dialog_playlist_title = data.playlist_title;
       }
-      if (dialog_type === 4) {
-        $scope.dialog_title = i18next.t('_CONNECT_TO_LASTFM');
-      }
       if (dialog_type === 5) {
         $scope.dialog_title = i18next.t('_OPEN_PLAYLIST');
       }
@@ -265,31 +260,6 @@ angular.module('listenone').controller('NavigationController', [
         MediaService.showMyPlaylist().success((res) => {
           $scope.myplaylist = res.result;
         });
-      }
-      if (dialog_type === 7) {
-        $scope.dialog_title = i18next.t('_CONNECT_TO_GITHUB');
-      }
-      if (dialog_type === 8) {
-        $scope.dialog_title = i18next.t('_EXPORT_TO_GITHUB_GIST');
-        GithubClient.gist.listExistBackup().then(
-          (res) => {
-            $scope.myBackup = res;
-          },
-          (err) => {
-            $scope.myBackup = [];
-          }
-        );
-      }
-      if (dialog_type === 10) {
-        $scope.dialog_title = i18next.t('_RECOVER_FROM_GITHUB_GIST');
-        GithubClient.gist.listExistBackup().then(
-          (res) => {
-            $scope.myBackup = res;
-          },
-          (err) => {
-            $scope.myBackup = [];
-          }
-        );
       }
       if (dialog_type === 11) {
         $scope.dialog_title = i18next.t('_LOGIN');
@@ -493,10 +463,6 @@ angular.module('listenone').controller('NavigationController', [
     $scope.closeDialog = () => {
       $scope.is_dialog_hidden = 1;
       $scope.dialog_type = 0;
-      // update lastfm status if not authorized
-      if (lastfm.isAuthRequested()) {
-        lastfm.updateStatus();
-      }
     };
 
     $scope.setCurrentList = (list_id) => {
@@ -585,60 +551,6 @@ angular.module('listenone').controller('NavigationController', [
         }
       };
       reader.readAsText(fileObject);
-    };
-
-    $scope.gistBackupLoading = false;
-    $scope.backupMySettings2Gist = (gistId, isPublic) => {
-      const items = {};
-      Object.keys(localStorage).forEach((key) => {
-        if (key !== 'gistid' && key !== 'githubOauthAccessKey') {
-          // avoid token leak
-          items[key] = localStorage.getObject(key);
-        }
-      });
-      const gistFiles = GithubClient.gist.json2gist(items);
-      $scope.gistBackupLoading = true;
-      GithubClient.gist.backupMySettings2Gist(gistFiles, gistId, isPublic).then(
-        () => {
-          notyf.dismissAll();
-          notyf.success('成功导出我的歌单到Gist');
-          $scope.gistBackupLoading = false;
-        },
-        (err) => {
-          notyf.dismissAll();
-          notyf.warning('导出我的歌单失败，检查后重试');
-          $scope.gistBackupLoading = false;
-        }
-      );
-      notyf.info('正在导出我的歌单到Gist...');
-    };
-
-    $scope.gistRestoreLoading = false;
-    $scope.importMySettingsFromGist = (gistId) => {
-      $scope.gistRestoreLoading = true;
-      GithubClient.gist.importMySettingsFromGist(gistId).then(
-        (raw) => {
-          GithubClient.gist.gist2json(raw, (data) => {
-            Object.keys(data).forEach((item) =>
-              localStorage.setObject(item, data[item])
-            );
-            notyf.dismissAll();
-            notyf.success('导入我的歌单成功');
-            $scope.gistRestoreLoading = false;
-            $rootScope.$broadcast('myplaylist:update');
-          });
-        },
-        (err) => {
-          notyf.dismissAll();
-          if (err === 404) {
-            notyf.warning('未找到备份歌单，请先备份');
-          } else {
-            notyf.warning('导入我的歌单失败，检查后重试');
-          }
-          $scope.gistRestoreLoading = false;
-        }
-      );
-      notyf.info('正在从Gist导入我的歌单...');
     };
 
     $scope.showShortcuts = () => {};

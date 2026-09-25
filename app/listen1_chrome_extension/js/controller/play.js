@@ -2,7 +2,7 @@
 /* eslint-disable no-shadow */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable global-require */
-/* global angular notyf i18next MediaService l1Player hotkeys GithubClient isElectron require getLocalStorageValue getPlayer getPlayerAsync addPlayerListener smoothScrollTo lastfm */
+/* global angular notyf i18next MediaService l1Player hotkeys isElectron require getLocalStorageValue getPlayer getPlayerAsync addPlayerListener smoothScrollTo */
 
 function getCSSStringFromSetting(setting) {
   let { backgroundAlpha } = setting;
@@ -320,23 +320,6 @@ angular.module('listenone').controller('PlayController', [
       $scope.settings.playmode = ($scope.settings.playmode + 1) % playmodeCount;
       switchMode($scope.settings.playmode);
       $scope.saveLocalSettings();
-    };
-
-    $rootScope.openGithubAuth = GithubClient.github.openAuthUrl;
-    $rootScope.GithubLogout = () => {
-      GithubClient.github.logout();
-      $scope.$evalAsync(() => {
-        $scope.githubStatus = 0;
-        $scope.githubStatusText = GithubClient.github.getStatusText();
-      });
-    };
-    $rootScope.updateGithubStatus = () => {
-      GithubClient.github.updateStatus((data) => {
-        $scope.$evalAsync(() => {
-          $scope.githubStatus = data;
-          $scope.githubStatusText = GithubClient.github.getStatusText();
-        });
-      });
     };
 
     $scope.togglePlaylist = () => {
@@ -657,9 +640,6 @@ angular.module('listenone').controller('PlayController', [
               artist: track.artist,
               status: 'playing',
             };
-            if (lastfm.isAuthorized()) {
-              lastfm.sendNowPlaying(track.title, track.artist, () => {});
-            }
             MediaService.getLyric(
               msg.data.currentPlaying.id,
               msg.data.currentPlaying.album_id,
@@ -734,21 +714,6 @@ angular.module('listenone').controller('PlayController', [
               } else {
                 ipcRenderer.send('isPlaying', false);
               }
-            }
-
-            if (msg.data.reason === 'Ended') {
-              if (!lastfm.isAuthorized()) {
-                break;
-              }
-              // send lastfm scrobble
-              const track = l1Player.getTrackById(l1Player.status.playing.id);
-              lastfm.scrobble(
-                l1Player.status.playing.playedFrom,
-                track.title,
-                track.artist,
-                track.album,
-                () => {}
-              );
             }
 
             break;
